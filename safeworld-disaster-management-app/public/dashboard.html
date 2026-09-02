@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .dash-tabs{ display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+  .dash-tabs button{
+    font-family: var(--font-body); font-weight:700; font-size:.86rem;
+    padding: 10px 16px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; cursor:pointer;
+  }
+  .dash-tabs button.active{ background: var(--navy-950); color:#fff; border-color:var(--navy-950); }
+  .dash-panel{ display:none; }
+  .dash-panel.active{ display:block; }
+  .manage-grid{ display:grid; grid-template-columns: 1.4fr 1fr; gap:24px; align-items:start; }
+  @media (max-width:980px){ .manage-grid{ grid-template-columns:1fr; } }
+  .row-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .status-select{ padding:6px 10px; font-size:.82rem; border-radius:6px; border:1.5px solid var(--line); }
+  .list-item{ border:1px solid var(--line); border-radius: var(--radius); padding:16px; background:#fff; margin-bottom:12px; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section style="padding-bottom:0;">
+    <div class="container">
+      <span class="kicker">Responder tools</span>
+      <h1 id="dashTitle" style="max-width:26ch;">Dashboard</h1>
+      <p id="dashSub" class="muted"></p>
+    </div>
+  </section>
+
+  <section id="dashContent" style="display:none;">
+    <div class="container">
+      <div class="dash-tabs">
+        <button class="active" data-panel="panelAlerts">Alerts</button>
+        <button data-panel="panelReports">Incident Reports</button>
+        <button data-panel="panelShelters">Shelters</button>
+        <button data-panel="panelContacts" id="contactsTabBtn" style="display:none;">Contacts</button>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="dash-panel active" id="panelAlerts">
+        <div class="manage-grid">
+          <div>
+            <h3>Published alerts</h3>
+            <div id="alertsManageList"><div class="empty-state">Loading…</div></div>
+          </div>
+          <div class="card">
+            <h3>Publish a new alert</h3>
+            <div class="form-msg" id="alertMsg"></div>
+            <form id="alertForm">
+              <div class="field"><label for="aTitle">Title</label><input type="text" id="aTitle" required /></div>
+              <div class="form-row">
+                <div class="field"><label for="aType">Type</label><input type="text" id="aType" placeholder="Flood, Cyclone…" required /></div>
+                <div class="field"><label for="aSeverity">Severity</label>
+                  <select id="aSeverity" required>
+                    <option value="">Select</option>
+                    <option>Green</option><option>Yellow</option><option>Orange</option><option>Red</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field"><label for="aRegion">Region</label><input type="text" id="aRegion" required /></div>
+              <div class="field"><label for="aDesc">Description</label><textarea id="aDesc" required></textarea></div>
+              <button type="submit" class="btn btn-primary btn-block">Publish alert</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="dash-panel" id="panelReports">
+        <h3>Citizen-submitted reports</h3>
+        <div id="reportsList"><div class="empty-state">Loading…</div></div>
+      </div>
+
+      <!-- SHELTERS -->
+      <div class="dash-panel" id="panelShelters">
+        <div class="manage-grid">
+          <div>
+            <h3>Tracked shelters &amp; resources</h3>
+            <div id="sheltersManageList"><div class="empty-state">Loading…</div></div>
+          </div>
+          <div class="card">
+            <h3>Add a shelter / resource</h3>
+            <div class="form-msg" id="shelterMsg"></div>
+            <form id="shelterForm">
+              <div class="field"><label for="sName">Name</label><input type="text" id="sName" required /></div>
+              <div class="field"><label for="sType">Type</label>
+                <select id="sType"><option>Shelter</option><option>Medical</option><option>Control Room</option></select>
+              </div>
+              <div class="field"><label for="sAddress">Address</label><input type="text" id="sAddress" required /></div>
+              <div class="form-row">
+                <div class="field"><label for="sLat">Latitude</label><input type="number" step="any" id="sLat" required /></div>
+                <div class="field"><label for="sLng">Longitude</label><input type="number" step="any" id="sLng" required /></div>
+              </div>
+              <div class="field"><label for="sCapacity">Capacity</label><input type="number" id="sCapacity" placeholder="0" /></div>
+              <button type="submit" class="btn btn-primary btn-block">Add to map</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACTS (admin only) -->
+      <div class="dash-panel" id="panelContacts">
+        <div class="manage-grid">
+          <div>
+            <h3>Directory</h3>
+            <div id="contactsManageList"><div class="empty-state">Loading…</div></div>
+          </div>
+          <div class="card">
+            <h3>Add a contact</h3>
+            <div class="form-msg" id="contactMsg"></div>
+            <form id="contactForm">
+              <div class="field"><label for="cName">Name</label><input type="text" id="cName" required /></div>
+              <div class="field"><label for="cNumber">Number</label><input type="text" id="cNumber" required /></div>
+              <div class="field"><label for="cCategory">Category</label><input type="text" id="cCategory" placeholder="National, Tamil Nadu, Medical…" required /></div>
+              <div class="field"><label for="cNotes">Notes</label><input type="text" id="cNotes" /></div>
+              <button type="submit" class="btn btn-primary btn-block">Add contact</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lockedMsg" class="text-center">
+    <div class="container">
+      <div class="empty-state">Checking your access…</div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+const user = getStoredUser();
+const dashContent = document.getElementById("dashContent");
+const lockedMsg = document.getElementById("lockedMsg");
+
+if (!user || !["volunteer", "admin"].includes(user.role)) {
+  lockedMsg.innerHTML = `<div class="container"><div class="empty-state">This dashboard is for signed-in volunteers and admins. <a href="login.html">Sign in</a> or <a href="register.html">register as a volunteer</a>.</div></div>`;
+} else {
+  lockedMsg.style.display = "none";
+  dashContent.style.display = "block";
+  document.getElementById("dashTitle").textContent = `Welcome back, ${user.name.split(" ")[0]}`;
+  document.getElementById("dashSub").textContent = `Signed in as ${user.role}. Everything you publish here is visible to the public instantly.`;
+  if (user.role === "admin") document.getElementById("contactsTabBtn").style.display = "inline-flex";
+  initDashboard();
+}
+
+function initDashboard() {
+  // Tabs
+  document.querySelectorAll(".dash-tabs button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".dash-tabs button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".dash-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.panel).classList.add("active");
+    });
+  });
+
+  loadAlertsManage();
+  loadReports();
+  loadSheltersManage();
+  if (user.role === "admin") loadContactsManage();
+
+  document.getElementById("alertForm").addEventListener("submit", onCreateAlert);
+  document.getElementById("shelterForm").addEventListener("submit", onCreateShelter);
+  const cForm = document.getElementById("contactForm");
+  if (cForm) cForm.addEventListener("submit", onCreateContact);
+}
+
+// ---------- ALERTS ----------
+async function loadAlertsManage() {
+  const wrap = document.getElementById("alertsManageList");
+  try {
+    const { alerts } = await api.getAlerts();
+    if (alerts.length === 0) { wrap.innerHTML = `<div class="empty-state">No alerts published yet.</div>`; return; }
+    wrap.innerHTML = alerts.map(a => `
+      <div class="list-item">
+        <div class="meta" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+          <span class="tag tag-${a.severity.toLowerCase()}">${a.severity}</span>
+          <span class="mono muted" style="font-size:.78rem;">${a.active ? "ACTIVE" : "CLOSED"}</span>
+        </div>
+        <h3 style="margin:0 0 4px;">${a.title}</h3>
+        <p style="margin:0 0 8px; font-size:.9rem;">${a.region} · ${a.type}</p>
+        <div class="row-actions">
+          ${a.active ? `<button class="btn btn-ghost btn-sm" data-close="${a.id}">Mark resolved</button>` : ""}
+          <button class="btn btn-red btn-sm" data-delete="${a.id}">Delete</button>
+        </div>
+      </div>
+    `).join("");
+
+    wrap.querySelectorAll("[data-close]").forEach(btn => btn.addEventListener("click", async () => {
+      await api.closeAlert(btn.dataset.close); loadAlertsManage();
+    }));
+    wrap.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", async () => {
+      if (!confirm("Delete this alert permanently?")) return;
+      await api.deleteAlert(btn.dataset.delete); loadAlertsManage();
+    }));
+  } catch (err) {
+    wrap.innerHTML = `<div class="empty-state">Couldn't load alerts.</div>`;
+  }
+}
+
+async function onCreateAlert(e) {
+  e.preventDefault();
+  const msg = document.getElementById("alertMsg");
+  msg.className = "form-msg";
+  try {
+    await api.createAlert({
+      title: document.getElementById("aTitle").value,
+      type: document.getElementById("aType").value,
+      severity: document.getElementById("aSeverity").value,
+      region: document.getElementById("aRegion").value,
+      description: document.getElementById("aDesc").value,
+    });
+    msg.textContent = "Alert published.";
+    msg.className = "form-msg success show";
+    e.target.reset();
+    loadAlertsManage();
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.className = "form-msg error show";
+  }
+}
+
+// ---------- REPORTS ----------
+async function loadReports() {
+  const wrap = document.getElementById("reportsList");
+  try {
+    const { reports } = await api.getReports();
+    if (reports.length === 0) { wrap.innerHTML = `<div class="empty-state">No incident reports yet.</div>`; return; }
+    wrap.innerHTML = reports.map(r => `
+      <div class="list-item">
+        <div class="meta" style="display:flex; gap:8px; align-items:center; margin-bottom:6px; flex-wrap:wrap;">
+          <span class="tag">${r.type}</span>
+          <span class="mono muted" style="font-size:.78rem;">${new Date(r.submittedAt).toLocaleString("en-IN")}</span>
+        </div>
+        <p style="margin:0 0 6px;"><strong>${r.location}</strong> — ${r.severity}</p>
+        <p style="margin:0 0 8px;">${r.description}</p>
+        <p class="muted" style="font-size:.85rem; margin:0 0 10px;">Reported by ${r.reporterName}${r.contactNumber ? ` · ${r.contactNumber}` : ""}</p>
+        <div class="row-actions">
+          <select class="status-select" data-status="${r.id}">
+            ${["New", "Verified", "In Progress", "Resolved"].map(s => `<option ${s === r.status ? "selected" : ""}>${s}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+    `).join("");
+
+    wrap.querySelectorAll("[data-status]").forEach(sel => sel.addEventListener("change", async () => {
+      await api.updateReportStatus(sel.dataset.status, sel.value);
+    }));
+  } catch (err) {
+    wrap.innerHTML = `<div class="empty-state">Couldn't load reports.</div>`;
+  }
+}
+
+// ---------- SHELTERS ----------
+async function loadSheltersManage() {
+  const wrap = document.getElementById("sheltersManageList");
+  try {
+    const { shelters } = await api.getShelters();
+    if (shelters.length === 0) { wrap.innerHTML = `<div class="empty-state">No shelters added yet.</div>`; return; }
+    wrap.innerHTML = shelters.map(s => `
+      <div class="list-item">
+        <h3 style="margin:0 0 4px;">${s.name}</h3>
+        <p style="margin:0 0 8px; font-size:.9rem;">${s.address}</p>
+        <div class="row-actions">
+          <select class="status-select" data-shelter-status="${s.id}">
+            ${["Open", "Standby", "Full", "Closed"].map(st => `<option ${st === s.status ? "selected" : ""}>${st}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+    `).join("");
+
+    wrap.querySelectorAll("[data-shelter-status]").forEach(sel => sel.addEventListener("change", async () => {
+      await api.updateShelterStatus(sel.dataset.shelterStatus, sel.value);
+    }));
+  } catch (err) {
+    wrap.innerHTML = `<div class="empty-state">Couldn't load shelters.</div>`;
+  }
+}
+
+async function onCreateShelter(e) {
+  e.preventDefault();
+  const msg = document.getElementById("shelterMsg");
+  msg.className = "form-msg";
+  try {
+    await api.createShelter({
+      name: document.getElementById("sName").value,
+      type: document.getElementById("sType").value,
+      address: document.getElementById("sAddress").value,
+      lat: document.getElementById("sLat").value,
+      lng: document.getElementById("sLng").value,
+      capacity: document.getElementById("sCapacity").value,
+    });
+    msg.textContent = "Shelter added.";
+    msg.className = "form-msg success show";
+    e.target.reset();
+    loadSheltersManage();
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.className = "form-msg error show";
+  }
+}
+
+// ---------- CONTACTS (admin) ----------
+async function loadContactsManage() {
+  const wrap = document.getElementById("contactsManageList");
+  try {
+    const { contacts } = await api.getContacts();
+    wrap.innerHTML = contacts.map(c => `
+      <div class="list-item">
+        <h3 style="margin:0 0 4px;">${c.name}</h3>
+        <p style="margin:0 0 8px;" class="mono">${c.number} · ${c.category}</p>
+        <div class="row-actions"><button class="btn btn-red btn-sm" data-delete-contact="${c.id}">Delete</button></div>
+      </div>
+    `).join("");
+    wrap.querySelectorAll("[data-delete-contact]").forEach(btn => btn.addEventListener("click", async () => {
+      if (!confirm("Delete this contact?")) return;
+      await api.deleteContact(btn.dataset.deleteContact);
+      loadContactsManage();
+    }));
+  } catch (err) {
+    wrap.innerHTML = `<div class="empty-state">Couldn't load contacts.</div>`;
+  }
+}
+
+async function onCreateContact(e) {
+  e.preventDefault();
+  const msg = document.getElementById("contactMsg");
+  msg.className = "form-msg";
+  try {
+    await api.createContact({
+      name: document.getElementById("cName").value,
+      number: document.getElementById("cNumber").value,
+      category: document.getElementById("cCategory").value,
+      notes: document.getElementById("cNotes").value,
+    });
+    msg.textContent = "Contact added.";
+    msg.className = "form-msg success show";
+    e.target.reset();
+    loadContactsManage();
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.className = "form-msg error show";
+  }
+}
+</script>
+</body>
+</html>

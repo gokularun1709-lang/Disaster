@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Disaster Guides — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .disaster-select{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
+  .disaster-select button{
+    font-family: var(--font-body); font-weight:700; font-size:.86rem;
+    padding: 10px 16px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; cursor:pointer; display:flex; align-items:center; gap:8px;
+  }
+  .disaster-select button.active{ background: var(--navy-950); color:#fff; border-color: var(--navy-950); }
+  .phase-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:20px; }
+  @media (max-width:900px){ .phase-grid{ grid-template-columns:1fr; } }
+  .phase-card h4{ font-family:var(--font-mono); text-transform:uppercase; font-size:.78rem; letter-spacing:.06em; color:var(--teal-dark); margin-bottom:12px; }
+  .phase-card.during h4{ color: var(--amber-dark); }
+  .phase-card.after h4{ color: var(--navy-800); }
+  .phase-card ul{ margin:0; padding-left: 20px; }
+  .phase-card li{ margin-bottom:8px; color: var(--ink-soft); font-size:.92rem; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section style="padding-bottom:0;">
+    <div class="container">
+      <span class="kicker">Reference library</span>
+      <h1 style="max-width:20ch;">What to do — before, during and after</h1>
+      <p style="max-width:60ch;">Select a disaster type. Each guide is organised around the three moments that matter: preparing ahead, acting during the event, and recovering safely afterward.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="disaster-select" id="disasterSelect"></div>
+      <div id="disasterContent"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<button class="sos-fab" data-sos-fab type="button" aria-haspopup="dialog">SOS</button>
+<div class="modal-backdrop" data-sos-modal role="dialog" aria-modal="true" aria-label="Emergency quick dial">
+  <div class="modal">
+    <button class="modal-close" data-sos-close aria-label="Close">×</button>
+    <h3>Emergency quick dial</h3>
+    <div>
+      <div class="sos-number"><span>All emergencies</span><a class="num" href="tel:112">112</a></div>
+      <div class="sos-number"><span>Ambulance</span><a class="num" href="tel:108">108</a></div>
+      <div class="sos-number"><span>Fire</span><a class="num" href="tel:101">101</a></div>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:.85rem;" data-sos-location class="muted"></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+const DISASTERS = {
+  earthquake: {
+    icon: "🏚️", label: "Earthquake",
+    before: ["Bolt heavy furniture and shelving to walls", "Identify safe spots: under sturdy tables, away from windows", "Keep a torch, whistle and shoes by your bed", "Practise Drop, Cover and Hold On with your household"],
+    during: ["Drop to the ground, take Cover under sturdy furniture, Hold On", "Stay indoors until shaking stops — don't run outside mid-shake", "If outdoors, move to open ground away from buildings and poles", "If driving, pull over away from bridges and overpasses"],
+    after: ["Expect aftershocks — keep away from damaged structures", "Check for gas leaks by smell, not by lighting a flame", "Use stairs, never lifts", "Check on neighbours, especially elderly or disabled residents"],
+  },
+  flood: {
+    icon: "🌊", label: "Flood",
+    before: ["Know your area's flood history and evacuation routes", "Move valuables and documents to upper floors", "Keep a battery radio and charged power bank ready", "Sign up for local flood alerts (SafeWorld alert band, SMS, radio)"],
+    during: ["Move to higher ground immediately if advised", "Never walk or drive through moving flood water", "Avoid contact with flood water — it may be contaminated or electrified", "Turn off electricity at the mains if water is entering your home"],
+    after: ["Don't return home until authorities confirm it's safe", "Avoid drinking tap water until it's declared safe", "Photograph damage for insurance before cleanup", "Watch for weakened roads, bridges and loose electrical lines"],
+  },
+  cyclone: {
+    icon: "🌀", label: "Cyclone",
+    before: ["Track official cyclone bulletins from IMD / TN state EOC", "Secure loose objects, tree branches, and roofing", "Stock 3 days of food, water, medicines and torches", "Know your nearest cyclone shelter (see Shelters map)"],
+    during: ["Stay indoors, away from windows and glass doors", "If the shelter is unsafe, move to an interior room on the lowest floor", "Don't go out during the 'eye' — winds return suddenly from the other direction", "Keep your phone charged and on low brightness"],
+    after: ["Watch for downed power lines and report them (see Contacts)", "Boil or treat drinking water until supply is confirmed safe", "Avoid coastal areas — storm surge risk can persist", "Check structural damage before re-entering buildings"],
+  },
+  fire: {
+    icon: "🔥", label: "Fire",
+    before: ["Install and test smoke alarms every 6 months", "Keep a fire extinguisher accessible and know how to use it", "Plan two exit routes from every room", "Never overload electrical sockets or leave stoves unattended"],
+    during: ["Get low and go — smoke rises, cleaner air is near the floor", "Feel doors before opening; if hot, use another exit", "Never use lifts during a fire", "If clothes catch fire: Stop, Drop and Roll"],
+    after: ["Don't re-enter until firefighters declare it safe", "Have your home checked for structural and electrical safety", "Document damage with photos for insurance", "Watch for smouldering embers that can reignite"],
+  },
+  tsunami: {
+    icon: "🌊", label: "Tsunami",
+    before: ["Learn if your home/workplace is in a tsunami-risk coastal zone", "Know your vertical/inland evacuation route in advance", "A strong coastal earthquake is itself a tsunami warning — don't wait for a siren", "Keep emergency kit and documents ready to grab and go"],
+    during: ["Move immediately to high ground or 2km inland, on foot if possible", "Do not wait to see the wave — the first is rarely the largest", "If trapped, climb to the highest floor or a sturdy tree", "Stay away from the coast until officials give the all-clear"],
+    after: ["Avoid disaster areas — your presence can hamper rescue work", "Stay away from debris in water; it can hide sharp hazards", "Expect multiple waves over several hours — don't return early", "Boil drinking water until the supply is confirmed safe"],
+  },
+  landslide: {
+    icon: "⛰️", label: "Landslide",
+    before: ["Know if you live on or below a steep, saturated slope", "Watch for warning signs: new cracks, tilting trees, doors that stick", "Plant ground cover on slopes; build retaining walls where advised", "Keep a go-bag ready during prolonged heavy rain"],
+    during: ["Move away quickly, perpendicular to the slide path, not straight downhill", "If escape isn't possible, curl into a tight ball and protect your head", "Listen for unusual sounds — cracking trees, boulders knocking together", "Evacuate immediately if instructed, without waiting to pack"],
+    after: ["Stay away from the slide area — further slides are common", "Report broken utility lines to authorities (see Contacts)", "Check for injured or trapped people near the slide edges, safely", "Have a geotechnical assessment before rebuilding nearby"],
+  },
+};
+
+const selectWrap = document.getElementById("disasterSelect");
+const content = document.getElementById("disasterContent");
+
+function renderSelect(activeKey) {
+  selectWrap.innerHTML = Object.entries(DISASTERS).map(([key, d]) => `
+    <button class="${key === activeKey ? "active" : ""}" data-key="${key}">${d.icon} ${d.label}</button>
+  `).join("");
+  selectWrap.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => showDisaster(btn.dataset.key));
+  });
+}
+
+function showDisaster(key) {
+  const d = DISASTERS[key];
+  renderSelect(key);
+  content.innerHTML = `
+    <div class="card" style="margin-bottom:24px;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="icon-tile" style="font-size:1.7rem; width:56px; height:56px;">${d.icon}</div>
+        <h2 style="margin:0;">${d.label} preparedness guide</h2>
+      </div>
+    </div>
+    <div class="phase-grid">
+      <div class="card phase-card before"><h4>Before</h4><ul>${d.before.map(i => `<li>${i}</li>`).join("")}</ul></div>
+      <div class="card phase-card during"><h4>During</h4><ul>${d.during.map(i => `<li>${i}</li>`).join("")}</ul></div>
+      <div class="card phase-card after"><h4>After</h4><ul>${d.after.map(i => `<li>${i}</li>`).join("")}</ul></div>
+    </div>
+  `;
+}
+
+showDisaster("earthquake");
+</script>
+</body>
+</html>

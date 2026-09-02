@@ -1,0 +1,7 @@
+[
+  { "id": "s1", "name": "Kamaraj College Relief Camp", "type": "Shelter", "address": "Kamaraj College of Engineering & Technology, S.P.G.C Nagar, Virudhunagar", "lat": 9.5680, "lng": 77.9624, "capacity": 400, "status": "Open" },
+  { "id": "s2", "name": "Madurai Govt. Rajaji Hospital Trauma Centre", "type": "Medical", "address": "Panagal Rd, Madurai", "lat": 9.9195, "lng": 78.1200, "capacity": 250, "status": "Open" },
+  { "id": "s3", "name": "Chennai Corporation Flood Relief Centre \u2014 Kotturpuram", "type": "Shelter", "address": "Kotturpuram, Chennai", "lat": 13.0169, "lng": 80.2422, "capacity": 600, "status": "Open" },
+  { "id": "s4", "name": "Virudhunagar District Collectorate Control Room", "type": "Control Room", "address": "Collectorate, Virudhunagar", "lat": 9.5851, "lng": 77.9622, "capacity": 0, "status": "Open" },
+  { "id": "s5", "name": "Tuticorin Coastal Cyclone Shelter", "type": "Shelter", "address": "Harbour Area, Thoothukudi", "lat": 8.7642, "lng": 78.1348, "capacity": 500, "status": "Standby" }
+]

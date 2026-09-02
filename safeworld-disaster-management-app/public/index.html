@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SafeWorld — Disaster Management & Preparedness</title>
+<meta name="description" content="Live disaster alerts, preparedness checklists, emergency contacts, shelter locations and incident reporting for Tamil Nadu communities." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<div class="alert-band" data-alert-band data-level="green">
+  <span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span>
+</div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+
+  <section class="hero" style="padding-top:56px;">
+    <div class="container hero-inner">
+      <div>
+        <span class="eyebrow">Tamil Nadu · Community Resilience Network</span>
+        <h1>Know before it happens. Act when it does.</h1>
+        <p class="lead">SafeWorld brings live disaster alerts, step-by-step preparedness plans, verified shelters and one-tap emergency contacts into a single place — built for the moments when every minute counts.</p>
+        <div class="hero-actions">
+          <a href="report.html" class="btn btn-primary">Report an incident</a>
+          <a href="preparedness.html" class="btn btn-outline">Build your preparedness plan</a>
+        </div>
+      </div>
+      <div class="hero-panel">
+        <h3>Right now</h3>
+        <div id="heroStats">
+          <div class="hero-stat"><span class="lbl">Loading live status…</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="alerts">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="kicker">Live feed</span>
+          <h2>Active alerts &amp; advisories</h2>
+        </div>
+        <a href="report.html" class="btn btn-ghost btn-sm">Seeing something not listed? Report it →</a>
+      </div>
+      <div id="alertsList">
+        <div class="empty-state">Loading alerts…</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="kicker">Quick access</span>
+          <h2>Everything you need, in one place</h2>
+        </div>
+      </div>
+      <div class="grid grid-4">
+        <a href="disasters.html" class="card card-hover" style="text-decoration:none;">
+          <div class="icon-tile">🌪️</div>
+          <h3>Disaster Guides</h3>
+          <p class="mono" style="font-size:.85rem;">Earthquake · Flood · Cyclone · Fire · Tsunami · Landslide — what to do before, during and after.</p>
+        </a>
+        <a href="preparedness.html" class="card card-hover" style="text-decoration:none;">
+          <div class="icon-tile">✅</div>
+          <h3>Preparedness Checklists</h3>
+          <p class="mono" style="font-size:.85rem;">Interactive, saved to your device — build a family emergency kit and evacuation plan.</p>
+        </a>
+        <a href="shelters.html" class="card card-hover" style="text-decoration:none;">
+          <div class="icon-tile">🗺️</div>
+          <h3>Shelters &amp; Relief Map</h3>
+          <p class="mono" style="font-size:.85rem;">Nearest open shelters, medical centres and control rooms plotted on a live map.</p>
+        </a>
+        <a href="contacts.html" class="card card-hover" style="text-decoration:none;">
+          <div class="icon-tile">📞</div>
+          <h3>Emergency Contacts</h3>
+          <p class="mono" style="font-size:.85rem;">National and Tamil Nadu helplines, one tap away — no signal searching required.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="grid grid-2" style="align-items:center; gap:48px;">
+        <div>
+          <span class="kicker">Why SafeWorld</span>
+          <h2>Built for the five minutes that matter most</h2>
+          <p>Most disaster information lives in scattered PDFs, WhatsApp forwards and government portals that fall over exactly when traffic spikes. SafeWorld keeps the essentials — alerts, contacts, shelters, and what-to-do steps — in a lightweight app that works even on a weak connection.</p>
+          <p>Citizens can report incidents in seconds. Volunteers and local authorities can publish verified alerts and track relief resources from the same dashboard.</p>
+          <a href="register.html" class="btn btn-dark">Join as a volunteer</a>
+        </div>
+        <div class="card" style="padding:0; overflow:hidden;">
+          <div style="background:var(--navy-050); padding:24px;">
+            <h3 style="margin-bottom:6px;">Three roles, one platform</h3>
+            <p class="mono" style="font-size:.82rem; margin:0;">CITIZEN · VOLUNTEER · ADMIN</p>
+          </div>
+          <div style="padding:22px;">
+            <div class="hero-stat" style="border-top:none;"><span class="lbl" style="color:var(--ink-soft);">Citizens</span><span style="font-weight:600;">Read alerts, report incidents, build a plan</span></div>
+            <div class="hero-stat"><span class="lbl" style="color:var(--ink-soft);">Volunteers</span><span style="font-weight:600;">Publish alerts, verify reports, manage shelters</span></div>
+            <div class="hero-stat"><span class="lbl" style="color:var(--ink-soft);">Admins</span><span style="font-weight:600;">Full oversight of contacts, users &amp; data</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="index.html" class="brand" style="margin-bottom:10px;"><span class="mark">S</span>SafeWorld</a>
+        <p style="color:rgba(255,255,255,.6); font-size:.88rem; max-width:32ch;">A community disaster management and preparedness platform for Tamil Nadu.</p>
+      </div>
+      <div>
+        <h4>Platform</h4>
+        <a href="disasters.html">Disaster Guides</a>
+        <a href="preparedness.html">Preparedness</a>
+        <a href="shelters.html">Shelters Map</a>
+        <a href="firstaid.html">First Aid</a>
+      </div>
+      <div>
+        <h4>Get help</h4>
+        <a href="contacts.html">Emergency Contacts</a>
+        <a href="report.html">Report an Incident</a>
+        <a href="login.html">Sign in</a>
+      </div>
+      <div>
+        <h4>Emergency</h4>
+        <a href="tel:112">Dial 112 — All Emergencies</a>
+        <a href="tel:1070">Dial 1070 — TN State EOC</a>
+        <a href="tel:108">Dial 108 — Ambulance</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <span>Final-year project · Kamaraj College of Engineering &amp; Technology</span>
+    </div>
+  </div>
+</footer>
+
+<button class="sos-fab" data-sos-fab type="button" aria-haspopup="dialog">SOS</button>
+<div class="modal-backdrop" data-sos-modal role="dialog" aria-modal="true" aria-label="Emergency quick dial">
+  <div class="modal">
+    <button class="modal-close" data-sos-close aria-label="Close">×</button>
+    <h3>Emergency quick dial</h3>
+    <p class="muted" style="font-size:.88rem;">Tap a number to call immediately.</p>
+    <div>
+      <div class="sos-number"><span>All emergencies</span><a class="num" href="tel:112">112</a></div>
+      <div class="sos-number"><span>Ambulance</span><a class="num" href="tel:108">108</a></div>
+      <div class="sos-number"><span>Fire</span><a class="num" href="tel:101">101</a></div>
+      <div class="sos-number"><span>Police</span><a class="num" href="tel:100">100</a></div>
+      <div class="sos-number"><span>TN State EOC</span><a class="num" href="tel:1070">1070</a></div>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:.85rem;" data-sos-location class="muted">
+      Locating you…
+    </div>
+    <a href="report.html" class="btn btn-red btn-block" style="margin-top:16px;">File a full incident report</a>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+  async function loadHome() {
+    const alertsList = document.getElementById("alertsList");
+    const heroStats = document.getElementById("heroStats");
+    try {
+      const { alerts } = await api.getAlerts();
+      const active = alerts.filter(a => a.active);
+
+      heroStats.innerHTML = `
+        <div class="hero-stat"><span class="lbl">Active alerts</span><span class="num">${active.length}</span></div>
+        <div class="hero-stat"><span class="lbl">Open shelters tracked</span><span class="num" id="shelterCount">—</span></div>
+        <div class="hero-stat"><span class="lbl">Helpline numbers ready</span><span class="num" id="contactCount">—</span></div>
+      `;
+
+      if (active.length === 0) {
+        alertsList.innerHTML = `<div class="empty-state">No active alerts right now. Stay prepared anyway — <a href="preparedness.html">build your checklist →</a></div>`;
+      } else {
+        alertsList.innerHTML = active.map(renderAlert).join("");
+      }
+
+      const [{ shelters }, { contacts }] = await Promise.all([api.getShelters(), api.getContacts()]);
+      document.getElementById("shelterCount").textContent = shelters.filter(s => s.status === "Open").length;
+      document.getElementById("contactCount").textContent = contacts.length;
+    } catch (err) {
+      alertsList.innerHTML = `<div class="empty-state">Couldn't load live alerts. Check that the server is running.</div>`;
+      heroStats.innerHTML = `<div class="hero-stat"><span class="lbl">Live status unavailable</span></div>`;
+    }
+  }
+
+  function renderAlert(a) {
+    const sevClass = { Green: "tag-green", Yellow: "tag-yellow", Orange: "tag-orange", Red: "tag-red" }[a.severity] || "tag";
+    const issued = new Date(a.issued).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    return `
+      <div class="alert-item" data-severity="${a.severity}">
+        <div style="flex:1;">
+          <div class="meta">
+            <span class="tag ${sevClass}">${a.severity} · ${a.type}</span>
+            <span class="region">${a.region}</span>
+          </div>
+          <h3 style="margin-bottom:6px;">${a.title}</h3>
+          <p style="margin-bottom:0;">${a.description}</p>
+        </div>
+        <div class="timestamp">Issued<br>${issued}</div>
+      </div>
+    `;
+  }
+
+  loadHome();
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>First Aid Guide — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .aid-item{ border:1px solid var(--line); border-radius: var(--radius); background:#fff; margin-bottom:12px; overflow:hidden; }
+  .aid-question{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:18px 20px; font-family: var(--font-body); font-weight:700; font-size:1rem;
+    display:flex; justify-content:space-between; align-items:center; gap:12px; color: var(--navy-950);
+  }
+  .aid-answer{ padding: 0 20px; max-height:0; overflow:hidden; transition: max-height .25s ease, padding .25s ease; }
+  .aid-answer.open{ padding: 0 20px 20px; max-height: 600px; }
+  .aid-answer ol{ margin:0; padding-left:20px; }
+  .aid-answer li{ margin-bottom:8px; color: var(--ink-soft); font-size:.94rem; }
+  .aid-item.emergency .aid-question{ color: var(--red-dark); }
+  .caveat{ background: rgba(214,69,80,.08); border:1px solid rgba(214,69,80,.25); border-radius:8px; padding:14px 16px; font-size:.88rem; color: var(--red-dark); margin-bottom:24px; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section style="padding-bottom:0;">
+    <div class="container">
+      <span class="kicker">First response</span>
+      <h1 style="max-width:22ch;">Basic first aid, while help is on the way</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="container" style="max-width:820px;">
+      <div class="caveat">This is general guidance, not a substitute for professional medical training or CPR/First-Aid certification. Call <strong>108</strong> for an ambulance in any serious medical emergency.</div>
+      <div id="aidList"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<button class="sos-fab" data-sos-fab type="button" aria-haspopup="dialog">SOS</button>
+<div class="modal-backdrop" data-sos-modal role="dialog" aria-modal="true" aria-label="Emergency quick dial">
+  <div class="modal">
+    <button class="modal-close" data-sos-close aria-label="Close">×</button>
+    <h3>Emergency quick dial</h3>
+    <div>
+      <div class="sos-number"><span>All emergencies</span><a class="num" href="tel:112">112</a></div>
+      <div class="sos-number"><span>Ambulance</span><a class="num" href="tel:108">108</a></div>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:.85rem;" data-sos-location class="muted"></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+const AID = [
+  { q: "Someone is unconscious and not breathing normally", emergency: true, steps: [
+    "Call 108 immediately or ask someone nearby to call",
+    "Check for a response — tap shoulders and shout",
+    "If trained, begin CPR: 30 chest compressions, 2 rescue breaths, repeat",
+    "Continue until help arrives or the person shows signs of life",
+  ]},
+  { q: "Severe bleeding", emergency: true, steps: [
+    "Call 108 for serious wounds",
+    "Apply firm, direct pressure with a clean cloth",
+    "Keep pressure constant — don't lift the cloth to check",
+    "Raise the injured area above heart level if possible",
+    "Add more cloth on top if blood soaks through — don't remove the first layer",
+  ]},
+  { q: "Burns", steps: [
+    "Cool the burn under cool (not ice-cold) running water for 20 minutes",
+    "Remove nearby jewellery/clothing before swelling starts",
+    "Cover loosely with a clean, non-fluffy cloth or cling film",
+    "Do not apply ice, butter, or ointments",
+    "Seek medical help for burns larger than a palm, or on the face/hands/genitals",
+  ]},
+  { q: "Fractures or suspected broken bones", steps: [
+    "Keep the person still — don't try to straighten the limb",
+    "Support the area above and below the injury",
+    "Immobilise with a splint or sling if you're trained to do so",
+    "Apply a cold pack wrapped in cloth to reduce swelling",
+    "Get medical help promptly",
+  ]},
+  { q: "Choking", emergency: true, steps: [
+    "Ask 'Are you choking?' — if they can cough or speak, encourage coughing",
+    "If they can't breathe, cough or speak: give 5 sharp back blows between the shoulder blades",
+    "Then give 5 abdominal thrusts (Heimlich manoeuvre)",
+    "Alternate back blows and abdominal thrusts until the object clears or help arrives",
+    "Call 108 if the airway doesn't clear quickly",
+  ]},
+  { q: "Snake bite", emergency: true, steps: [
+    "Keep the person calm and still — movement spreads venom faster",
+    "Remove tight clothing or jewellery near the bite",
+    "Keep the bitten limb below heart level",
+    "Do NOT cut the wound, suck out venom, or apply a tight tourniquet",
+    "Get to a hospital immediately — note the snake's appearance if safely possible",
+  ]},
+  { q: "Heat stroke", emergency: true, steps: [
+    "Move the person to shade or a cool area immediately",
+    "Remove excess clothing and cool the skin with wet cloths or fanning",
+    "Offer sips of water only if they are fully conscious",
+    "Call 108 if they are confused, unconscious, or not sweating despite heat",
+  ]},
+  { q: "Minor cuts and scrapes", steps: [
+    "Wash your hands before treating the wound",
+    "Rinse the cut under clean running water",
+    "Apply gentle pressure with a clean cloth to stop bleeding",
+    "Cover with a sterile adhesive bandage",
+    "Watch for signs of infection: redness, swelling, warmth, or pus",
+  ]},
+];
+
+const list = document.getElementById("aidList");
+list.innerHTML = AID.map((item, i) => `
+  <div class="aid-item ${item.emergency ? "emergency" : ""}">
+    <button class="aid-question" data-index="${i}" aria-expanded="false">
+      <span>${item.emergency ? "🚨 " : ""}${item.q}</span>
+      <span aria-hidden="true">+</span>
+    </button>
+    <div class="aid-answer" id="answer-${i}">
+      <ol>${item.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+    </div>
+  </div>
+`).join("");
+
+list.querySelectorAll(".aid-question").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const answer = document.getElementById(`answer-${btn.dataset.index}`);
+    const isOpen = answer.classList.contains("open");
+    answer.classList.toggle("open", !isOpen);
+    btn.setAttribute("aria-expanded", String(!isOpen));
+    btn.querySelector("span[aria-hidden]").textContent = isOpen ? "+" : "−";
+  });
+});
+</script>
+</body>
+</html>

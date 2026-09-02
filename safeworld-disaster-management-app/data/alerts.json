@@ -1,0 +1,35 @@
+[
+  {
+    "id": "a1",
+    "title": "Heavy Rainfall Warning — Coastal Tamil Nadu",
+    "type": "Flood",
+    "severity": "Orange",
+    "region": "Chennai, Kanchipuram, Chengalpattu",
+    "description": "IMD forecasts heavy to very heavy rainfall over the next 48 hours. Low-lying areas may experience waterlogging. Avoid unnecessary travel near river banks and stormwater drains.",
+    "issued": "2026-08-19T06:00:00.000Z",
+    "expires": "2026-08-22T06:00:00.000Z",
+    "active": true
+  },
+  {
+    "id": "a2",
+    "title": "Heat Advisory — Interior Districts",
+    "type": "Heatwave",
+    "severity": "Yellow",
+    "region": "Madurai, Tiruchirappalli, Virudhunagar",
+    "description": "Day temperatures expected to be 3-4°C above normal. Stay hydrated, avoid direct sun between 12pm-3pm, and check on elderly neighbours.",
+    "issued": "2026-08-18T04:30:00.000Z",
+    "expires": "2026-08-24T04:30:00.000Z",
+    "active": true
+  },
+  {
+    "id": "a3",
+    "title": "Cyclone Watch — Bay of Bengal System",
+    "type": "Cyclone",
+    "severity": "Yellow",
+    "region": "Entire Tamil Nadu Coast",
+    "description": "A low-pressure area over the Bay of Bengal may intensify. Fishermen are advised not to venture into the sea. Monitor official updates closely over the coming days.",
+    "issued": "2026-08-20T10:00:00.000Z",
+    "expires": "2026-08-26T10:00:00.000Z",
+    "active": true
+  }
+]

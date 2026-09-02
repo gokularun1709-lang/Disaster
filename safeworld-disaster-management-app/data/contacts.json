@@ -1,0 +1,17 @@
+[
+  { "id": "c1", "name": "National Emergency Number", "number": "112", "category": "National", "notes": "Single number for police, fire and medical emergencies across India." },
+  { "id": "c2", "name": "National Disaster Response Force (NDRF)", "number": "011-24363260", "category": "National", "notes": "Control room for large-scale disaster response." },
+  { "id": "c3", "name": "Fire Services", "number": "101", "category": "National", "notes": "Fire and rescue emergencies." },
+  { "id": "c4", "name": "Police", "number": "100", "category": "National", "notes": "Law and order emergencies." },
+  { "id": "c5", "name": "Ambulance", "number": "108", "category": "National", "notes": "Free emergency ambulance service." },
+  { "id": "c6", "name": "Disaster Management Helpline", "number": "1078", "category": "National", "notes": "National Disaster Management Authority control room." },
+  { "id": "c7", "name": "Women Helpline", "number": "1091", "category": "National", "notes": "Women in distress." },
+  { "id": "c8", "name": "Child Helpline", "number": "1098", "category": "National", "notes": "Child protection emergencies." },
+  { "id": "c9", "name": "Tamil Nadu State Emergency Operations Centre", "number": "1070", "category": "Tamil Nadu", "notes": "State-level disaster coordination, Chennai." },
+  { "id": "c10", "name": "Chennai District Disaster Control Room", "number": "044-25619206", "category": "Tamil Nadu", "notes": "District-level flood and cyclone control room." },
+  { "id": "c11", "name": "Tamil Nadu Fire & Rescue Services", "number": "101 / 044-28447700", "category": "Tamil Nadu", "notes": "State fire and rescue headquarters." },
+  { "id": "c12", "name": "Coast Guard (Tsunami / Sea Emergency)", "number": "1554", "category": "National", "notes": "Toll-free maritime emergency line." },
+  { "id": "c13", "name": "Blood Bank Helpline", "number": "104", "category": "Medical", "notes": "Health helpline and blood availability." },
+  { "id": "c14", "name": "Gas Leak Emergency (LPG)", "number": "1906", "category": "Utility", "notes": "Report cooking gas leaks." },
+  { "id": "c15", "name": "Electricity Emergency (TANGEDCO)", "number": "94987-94987", "category": "Utility", "notes": "Report downed lines, outages during storms." }
+]

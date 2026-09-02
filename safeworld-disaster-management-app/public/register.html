@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // If already signed in, skip straight past the auth pages.
+  (function () {
+    try {
+      if (localStorage.getItem("safeworld_token")) {
+        window.location.replace("index.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Account — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section>
+    <div class="container">
+      <div class="card form-card">
+        <h2 class="text-center">Create your account</h2>
+        <p class="text-center muted" style="margin-bottom:24px;">Register as a citizen to save your preparedness plan, or as a volunteer to help publish alerts and verify reports.</p>
+        <div class="form-msg" id="formMsg"></div>
+        <form id="registerForm">
+          <div class="field">
+            <label for="name">Full name</label>
+            <input type="text" id="name" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" required minlength="6" autocomplete="new-password" />
+            <div class="hint">At least 6 characters.</div>
+          </div>
+          <div class="field">
+            <label for="role">I am a</label>
+            <select id="role">
+              <option value="citizen">Citizen — I want alerts, checklists &amp; reporting</option>
+              <option value="volunteer">Volunteer — I want to help publish alerts &amp; manage relief data</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Create account</button>
+        </form>
+        <p class="text-center" style="margin-top:18px; font-size:.9rem;">Already registered? <a href="login.html" style="color:var(--teal-dark); font-weight:600;">Sign in</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+  const form = document.getElementById("registerForm");
+  const msg = document.getElementById("formMsg");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.className = "form-msg";
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating account…";
+    try {
+      const { token, user } = await api.register({
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        role: document.getElementById("role").value,
+      });
+      localStorage.setItem("safeworld_token", token);
+      localStorage.setItem("safeworld_user", JSON.stringify(user));
+      window.location.href = user.role === "citizen" ? "index.html" : "dashboard.html";
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.className = "form-msg error show";
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create account";
+    }
+  });
+</script>
+</body>
+</html>
