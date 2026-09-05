@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shelters & Relief Map — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  .shelter-layout{ display:grid; grid-template-columns: 1fr 1.3fr; gap:24px; align-items:start; }
+  @media (max-width: 900px){ .shelter-layout{ grid-template-columns:1fr; } }
+  .shelter-card{ border:1px solid var(--line); border-radius: var(--radius); padding:16px; margin-bottom:12px; background:#fff; cursor:pointer; transition: box-shadow .15s; }
+  .shelter-card:hover{ box-shadow: var(--shadow-sm); }
+  .shelter-card .top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .status-pill{ font-family: var(--font-mono); font-size:.68rem; text-transform:uppercase; padding:3px 9px; border-radius:999px; }
+  .status-Open{ background: rgba(31,157,111,.12); color: var(--teal-dark); }
+  .status-Standby{ background: rgba(232,178,58,.15); color:#8a6111; }
+  .status-Full, .status-Closed{ background: rgba(214,69,80,.12); color: var(--red-dark); }
+  #map{ height:100%; width:100%; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section style="padding-bottom:0;">
+    <div class="container">
+      <span class="kicker">Find safety</span>
+      <h1 style="max-width:24ch;">Shelters, medical centres &amp; control rooms</h1>
+      <p style="max-width:60ch;">Verified relief resources across Tamil Nadu. Volunteers update status in real time — check before you travel.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="shelter-layout">
+        <div id="shelterList"><div class="empty-state">Loading shelters…</div></div>
+        <div class="map-wrap"><div id="map"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<button class="sos-fab" data-sos-fab type="button" aria-haspopup="dialog">SOS</button>
+<div class="modal-backdrop" data-sos-modal role="dialog" aria-modal="true" aria-label="Emergency quick dial">
+  <div class="modal">
+    <button class="modal-close" data-sos-close aria-label="Close">×</button>
+    <h3>Emergency quick dial</h3>
+    <div>
+      <div class="sos-number"><span>All emergencies</span><a class="num" href="tel:112">112</a></div>
+      <div class="sos-number"><span>Ambulance</span><a class="num" href="tel:108">108</a></div>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:.85rem;" data-sos-location class="muted"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+  let map, markers = [];
+
+  function initMap() {
+    map = L.map("map").setView([10.9, 78.6], 7); // Tamil Nadu centroid
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18,
+    }).addTo(map);
+  }
+
+  function typeIcon(type) {
+    return { Shelter: "🏠", Medical: "🏥", "Control Room": "☎️" }[type] || "📍";
+  }
+
+  async function loadShelters() {
+    initMap();
+    try {
+      const { shelters } = await api.getShelters();
+      renderList(shelters);
+      renderMarkers(shelters);
+    } catch (err) {
+      document.getElementById("shelterList").innerHTML = `<div class="empty-state">Couldn't load shelters. Check that the server is running.</div>`;
+    }
+  }
+
+  function renderList(shelters) {
+    const list = document.getElementById("shelterList");
+    if (shelters.length === 0) {
+      list.innerHTML = `<div class="empty-state">No shelters listed yet.</div>`;
+      return;
+    }
+    list.innerHTML = shelters.map((s, i) => `
+      <div class="shelter-card" data-index="${i}">
+        <div class="top">
+          <h3 style="margin:0;">${typeIcon(s.type)} ${s.name}</h3>
+          <span class="status-pill status-${s.status}">${s.status}</span>
+        </div>
+        <p style="margin:6px 0 4px; font-size:.9rem;">${s.address}</p>
+        <p class="mono" style="margin:0; font-size:.78rem; color:var(--ink-soft);">${s.type}${s.capacity ? ` · Capacity ${s.capacity}` : ""}</p>
+      </div>
+    `).join("");
+
+    list.querySelectorAll(".shelter-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const i = Number(card.dataset.index);
+        const m = markers[i];
+        if (m) { map.setView(m.getLatLng(), 13); m.openPopup(); }
+      });
+    });
+  }
+
+  function renderMarkers(shelters) {
+    markers = shelters.map(s => {
+      const m = L.marker([s.lat, s.lng]).addTo(map);
+      m.bindPopup(`<strong>${s.name}</strong><br>${s.address}<br><em>${s.status}</em>`);
+      return m;
+    });
+    if (markers.length) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.3));
+    }
+  }
+
+  loadShelters();
+</script>
+</body>
+</html>

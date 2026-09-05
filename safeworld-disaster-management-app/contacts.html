@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emergency Contacts — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .filter-row{ display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+  .filter-row button{
+    font-family: var(--font-body); font-weight:700; font-size:.84rem;
+    padding: 8px 14px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; cursor:pointer;
+  }
+  .filter-row button.active{ background: var(--navy-950); border-color:var(--navy-950); color:#fff; }
+  .contact-row{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding: 16px 18px; border:1px solid var(--line); border-radius: var(--radius);
+    background:#fff; margin-bottom:12px;
+  }
+  .contact-row .info{ flex:1; }
+  .contact-row .cat{ font-family: var(--font-mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color: var(--teal-dark); }
+  .contact-row .notes{ font-size:.85rem; color: var(--ink-soft); margin-top:2px; }
+  .call-btn{
+    font-family: var(--font-mono); font-weight:700; font-size:1rem;
+    background: var(--navy-050); color: var(--navy-950); padding: 10px 18px;
+    border-radius: 8px; text-decoration:none; white-space:nowrap;
+  }
+  .call-btn:hover{ background: var(--navy-950); color:#fff; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section style="padding-bottom:0;">
+    <div class="container">
+      <span class="kicker">Save these</span>
+      <h1 style="max-width:22ch;">Emergency contact directory</h1>
+      <p style="max-width:60ch;">National and Tamil Nadu state helplines. Tap any number to call directly from your phone.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="filter-row" id="filterRow"></div>
+      <div id="contactsList"><div class="empty-state">Loading contacts…</div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<button class="sos-fab" data-sos-fab type="button" aria-haspopup="dialog">SOS</button>
+<div class="modal-backdrop" data-sos-modal role="dialog" aria-modal="true" aria-label="Emergency quick dial">
+  <div class="modal">
+    <button class="modal-close" data-sos-close aria-label="Close">×</button>
+    <h3>Emergency quick dial</h3>
+    <div>
+      <div class="sos-number"><span>All emergencies</span><a class="num" href="tel:112">112</a></div>
+      <div class="sos-number"><span>Ambulance</span><a class="num" href="tel:108">108</a></div>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:.85rem;" data-sos-location class="muted"></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+  let allContacts = [];
+  let activeFilter = "All";
+
+  async function loadContacts() {
+    try {
+      const { contacts } = await api.getContacts();
+      allContacts = contacts;
+      renderFilters();
+      renderContacts();
+    } catch (err) {
+      document.getElementById("contactsList").innerHTML = `<div class="empty-state">Couldn't load contacts. Check that the server is running.</div>`;
+    }
+  }
+
+  function renderFilters() {
+    const categories = ["All", ...new Set(allContacts.map(c => c.category))];
+    document.getElementById("filterRow").innerHTML = categories.map(cat => `
+      <button class="${cat === activeFilter ? "active" : ""}" data-cat="${cat}">${cat}</button>
+    `).join("");
+    document.querySelectorAll("#filterRow button").forEach(btn => {
+      btn.addEventListener("click", () => { activeFilter = btn.dataset.cat; renderFilters(); renderContacts(); });
+    });
+  }
+
+  function renderContacts() {
+    const filtered = activeFilter === "All" ? allContacts : allContacts.filter(c => c.category === activeFilter);
+    const list = document.getElementById("contactsList");
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state">No contacts in this category yet.</div>`;
+      return;
+    }
+    list.innerHTML = filtered.map(c => `
+      <div class="contact-row">
+        <div class="info">
+          <span class="cat">${c.category}</span>
+          <h3 style="margin:2px 0 0;">${c.name}</h3>
+          ${c.notes ? `<div class="notes">${c.notes}</div>` : ""}
+        </div>
+        <a class="call-btn" href="tel:${c.number.replace(/[^0-9+]/g, "")}">${c.number}</a>
+      </div>
+    `).join("");
+  }
+
+  loadContacts();
+</script>
+</body>
+</html>

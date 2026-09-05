@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Report an Incident — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section style="padding-bottom:0;">
+    <div class="container text-center">
+      <span class="kicker">Speak up</span>
+      <h1>Report an incident</h1>
+      <p style="max-width:56ch; margin:0 auto;">Seeing flooding, a downed tree, a fire, or someone in danger? File a report — volunteers and local authorities monitor this in real time. In a life-threatening emergency, call <strong>112</strong> first.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="card form-card">
+        <div class="form-msg" id="formMsg"></div>
+        <form id="reportForm">
+          <div class="field">
+            <label for="type">Incident type</label>
+            <select id="type" required>
+              <option value="">Select a type</option>
+              <option>Flooding</option>
+              <option>Fire</option>
+              <option>Building damage / collapse</option>
+              <option>Downed power line</option>
+              <option>Landslide</option>
+              <option>Road blockage</option>
+              <option>Person needs rescue</option>
+              <option>Medical emergency</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="severity">Perceived severity</label>
+              <select id="severity" required>
+                <option value="">Select severity</option>
+                <option>Low — inconvenience, no immediate danger</option>
+                <option>Medium — needs attention soon</option>
+                <option>High — active danger to people or property</option>
+                <option>Critical — life-threatening right now</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="contactNumber">Your contact number (optional)</label>
+              <input type="tel" id="contactNumber" placeholder="For responders to reach you" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="location">Location</label>
+            <input type="text" id="location" placeholder="Street, landmark, or area" required />
+            <div class="hint"><button type="button" class="btn btn-ghost btn-sm" id="useLocationBtn" style="margin-top:8px;">📍 Use my current location</button></div>
+          </div>
+
+          <div class="field">
+            <label for="description">What's happening?</label>
+            <textarea id="description" placeholder="Describe what you see — number of people affected, access routes, anything responders should know." required></textarea>
+          </div>
+
+          <div class="field">
+            <label for="reporterName">Your name (optional)</label>
+            <input type="text" id="reporterName" placeholder="Leave blank to report anonymously" />
+          </div>
+
+          <button type="submit" class="btn btn-red btn-block" id="submitBtn">Submit report</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<button class="sos-fab" data-sos-fab type="button" aria-haspopup="dialog">SOS</button>
+<div class="modal-backdrop" data-sos-modal role="dialog" aria-modal="true" aria-label="Emergency quick dial">
+  <div class="modal">
+    <button class="modal-close" data-sos-close aria-label="Close">×</button>
+    <h3>Emergency quick dial</h3>
+    <div>
+      <div class="sos-number"><span>All emergencies</span><a class="num" href="tel:112">112</a></div>
+      <div class="sos-number"><span>Ambulance</span><a class="num" href="tel:108">108</a></div>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:.85rem;" data-sos-location class="muted"></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+  document.getElementById("useLocationBtn").addEventListener("click", () => {
+    const btn = document.getElementById("useLocationBtn");
+    const locationInput = document.getElementById("location");
+    if (!navigator.geolocation) { alert("Location isn't supported on this device."); return; }
+    btn.textContent = "Locating…";
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        locationInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        btn.textContent = "📍 Location captured";
+      },
+      () => { btn.textContent = "📍 Use my current location"; alert("Couldn't get your location."); },
+      { timeout: 8000 }
+    );
+  });
+
+  const form = document.getElementById("reportForm");
+  const msg = document.getElementById("formMsg");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.className = "form-msg";
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting…";
+
+    const payload = {
+      type: document.getElementById("type").value,
+      severity: document.getElementById("severity").value,
+      location: document.getElementById("location").value,
+      description: document.getElementById("description").value,
+      contactNumber: document.getElementById("contactNumber").value || null,
+      reporterName: document.getElementById("reporterName").value || null,
+    };
+
+    try {
+      await api.createReport(payload);
+      msg.textContent = "Report submitted. Thank you — volunteers have been notified and will act on this.";
+      msg.className = "form-msg success show";
+      form.reset();
+    } catch (err) {
+      msg.textContent = err.message || "Something went wrong. Please try again.";
+      msg.className = "form-msg error show";
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit report";
+    }
+  });
+</script>
+</body>
+</html>

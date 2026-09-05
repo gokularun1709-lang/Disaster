@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<script>
+  // Auth gate: SafeWorld requires sign-in before any page content is shown.
+  (function () {
+    try {
+      if (!localStorage.getItem("safeworld_token")) {
+        window.location.replace("login.html");
+      }
+    } catch (e) { /* localStorage unavailable — fail open rather than break the page */ }
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Preparedness Checklists — SafeWorld</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .prep-tabs{ display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+  .prep-tabs button{
+    font-family: var(--font-body); font-weight:700; font-size:.86rem;
+    padding: 10px 16px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; cursor:pointer;
+  }
+  .prep-tabs button.active{ background: var(--teal); border-color: var(--teal); color:#fff; }
+  .prep-layout{ display:grid; grid-template-columns: 2fr 1fr; gap:24px; align-items:start; }
+  @media (max-width:900px){ .prep-layout{ grid-template-columns:1fr; } }
+  .progress-card{ position:sticky; top:90px; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="alert-band" data-alert-band data-level="green"><span class="dot" aria-hidden="true"></span><span>Checking regional alert status…</span></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="mark">S</span>SafeWorld</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="disasters.html">Disaster Guides</a></li>
+      <li><a href="preparedness.html">Preparedness</a></li>
+      <li><a href="shelters.html">Shelters &amp; Map</a></li>
+      <li><a href="firstaid.html">First Aid</a></li>
+      <li><a href="contacts.html">Emergency Contacts</a></li>
+      <li><a href="report.html">Report Incident</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+    <div class="nav-auth" data-auth-area></div>
+  </nav>
+</header>
+
+<main id="main">
+  <section style="padding-bottom:0;">
+    <div class="container">
+      <span class="kicker">Get ready</span>
+      <h1 style="max-width:22ch;">Your household preparedness checklist</h1>
+      <p style="max-width:60ch;">Tick items off as you complete them. Your progress is saved on this device automatically, so you can come back and pick up where you left off.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="prep-tabs" id="prepTabs"></div>
+      <div class="prep-layout">
+        <div>
+          <ul class="checklist" id="checklistItems"></ul>
+        </div>
+        <div class="card progress-card">
+          <h3>Your progress</h3>
+          <p class="muted" id="progressLabel" style="font-size:.88rem;">0 of 0 complete</p>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <button class="btn btn-ghost btn-block" id="resetBtn" style="margin-top:16px;" type="button">Reset this checklist</button>
+          <p class="hint" style="margin-top:14px;">Tip: keep a physical copy of this list in your emergency kit in case power or connectivity is down.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2026 SafeWorld. Built for academic demonstration.</span>
+      <a href="index.html" style="color:rgba(255,255,255,.65);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<button class="sos-fab" data-sos-fab type="button" aria-haspopup="dialog">SOS</button>
+<div class="modal-backdrop" data-sos-modal role="dialog" aria-modal="true" aria-label="Emergency quick dial">
+  <div class="modal">
+    <button class="modal-close" data-sos-close aria-label="Close">×</button>
+    <h3>Emergency quick dial</h3>
+    <div>
+      <div class="sos-number"><span>All emergencies</span><a class="num" href="tel:112">112</a></div>
+      <div class="sos-number"><span>Ambulance</span><a class="num" href="tel:108">108</a></div>
+    </div>
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:.85rem;" data-sos-location class="muted"></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script>
+const CHECKLISTS = {
+  household: {
+    label: "Household Kit",
+    items: [
+      "3-day supply of drinking water (4L per person per day)",
+      "Non-perishable food for 3 days",
+      "Battery or hand-crank torch with spare batteries",
+      "First aid kit with essential medicines",
+      "Whistle to signal for help",
+      "Dust masks and plastic sheeting",
+      "Portable power bank, fully charged",
+      "Copies of ID, insurance and property documents (waterproof pouch)",
+      "Cash in small denominations",
+      "Baby, pet or elderly-specific supplies if applicable",
+    ],
+  },
+  evacuation: {
+    label: "Evacuation Plan",
+    items: [
+      "Identify two evacuation routes from your home",
+      "Agree on a family meeting point outside the neighbourhood",
+      "Choose an out-of-area emergency contact everyone can call",
+      "Know the location of your nearest shelter (check Shelters map)",
+      "Keep your vehicle fuelled during warning periods",
+      "Pack a go-bag with essentials by the front door",
+      "Save local emergency numbers in every family member's phone",
+      "Plan for pets — carriers, food, vaccination records",
+    ],
+  },
+  home: {
+    label: "Home Safety",
+    items: [
+      "Secure heavy furniture and shelving to walls",
+      "Know the shut-off points for gas, water and electricity",
+      "Install smoke and gas detectors, test twice a year",
+      "Keep gutters and drains clear before monsoon season",
+      "Trim trees and branches near the house before cyclone season",
+      "Store important documents in a fire/water-resistant box",
+      "Reinforce doors and windows in cyclone-prone areas",
+    ],
+  },
+  workplace: {
+    label: "Workplace / Institution",
+    items: [
+      "Locate all fire exits and assembly points on arrival",
+      "Know who your floor warden / safety officer is",
+      "Participate in fire and earthquake drills",
+      "Keep a small emergency kit at your desk",
+      "Know the process for reporting hazards",
+      "Save the institution's emergency contact list",
+    ],
+  },
+};
+
+const tabsEl = document.getElementById("prepTabs");
+const listEl = document.getElementById("checklistItems");
+const progressLabel = document.getElementById("progressLabel");
+const progressFill = document.getElementById("progressFill");
+const resetBtn = document.getElementById("resetBtn");
+
+let activeKey = "household";
+
+function storageKey(key) { return `safeworld_checklist_${key}`; }
+
+function getState(key) {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey(key))) || {};
+  } catch (e) { return {}; }
+}
+function setState(key, state) {
+  localStorage.setItem(storageKey(key), JSON.stringify(state));
+}
+
+function renderTabs() {
+  tabsEl.innerHTML = Object.entries(CHECKLISTS).map(([key, c]) => `
+    <button class="${key === activeKey ? "active" : ""}" data-key="${key}">${c.label}</button>
+  `).join("");
+  tabsEl.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => { activeKey = btn.dataset.key; renderTabs(); renderChecklist(); });
+  });
+}
+
+function renderChecklist() {
+  const list = CHECKLISTS[activeKey];
+  const state = getState(activeKey);
+  listEl.innerHTML = list.items.map((item, i) => {
+    const done = !!state[i];
+    return `
+      <li class="${done ? "done" : ""}">
+        <input type="checkbox" id="item-${activeKey}-${i}" data-index="${i}" ${done ? "checked" : ""} />
+        <label for="item-${activeKey}-${i}">${item}</label>
+      </li>
+    `;
+  }).join("");
+
+  listEl.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const s = getState(activeKey);
+      s[cb.dataset.index] = cb.checked;
+      setState(activeKey, s);
+      cb.closest("li").classList.toggle("done", cb.checked);
+      updateProgress();
+    });
+  });
+
+  updateProgress();
+}
+
+function updateProgress() {
+  const list = CHECKLISTS[activeKey];
+  const state = getState(activeKey);
+  const done = list.items.filter((_, i) => state[i]).length;
+  const pct = Math.round((done / list.items.length) * 100);
+  progressLabel.textContent = `${done} of ${list.items.length} complete`;
+  progressFill.style.width = `${pct}%`;
+}
+
+resetBtn.addEventListener("click", () => {
+  if (!confirm("Reset progress for this checklist?")) return;
+  setState(activeKey, {});
+  renderChecklist();
+});
+
+renderTabs();
+renderChecklist();
+</script>
+</body>
+</html>
